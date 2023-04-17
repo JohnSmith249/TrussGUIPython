@@ -34,9 +34,52 @@ def create_scrollbar_frame(main_frame, H, W, Bg):
 
 def destroy_all(frame):
     try:
-        for widget in frame.winfo_children():
+        for widget in frame.grid_slaves():
             widget.destroy()
         frame.destroy()
     except:
         print("No onscreen frame to destroy !!!")
+
+
+def destroy_all_widget(frame):
+    try:
+        for widget in frame.grid_slaves():
+            widget.destroy()
+    except:
+        print("No widget to destroy ")
+
+
+def create_coor_info_entry(Data_entry, main_frame):
+
+    keep_widget = [".!labelframe8.!canvas.!frame.!label",
+                   ".!labelframe8.!canvas.!frame.!entry",
+                   ".!labelframe8.!canvas.!frame.!button",
+                   ".!labelframe8.!canvas.!frame.!button2"]
     
+    for widget in main_frame.winfo_children():
+            widget.destroy()
+    print("******************************************************************************")
+    
+    try:
+        NumberOfEntry = int(Data_entry.get())
+        destroy_all_widget(main_frame)
+    except:
+        print("Invalid data !!!")   
+
+    Node_label_font = ('regular', 10)
+    Node_label_height = 2
+
+    X_label = Label(main_frame, text="X Coordinate", height=Node_label_height, width=10, font=Node_label_font, bg="#49B265", fg="white")
+    Y_label = Label(main_frame, text="Y Coordinate", height=Node_label_height, width=10, font=Node_label_font, bg="#49B265", fg="white")
+    X_label.grid(column=2, row=2, padx=4, pady=10, columnspan=2)
+    Y_label.grid(column=4, row=2, padx=4, pady=10, columnspan=2)    
+
+    for entry in range(NumberOfEntry):
+        Node_Label_children = Label(main_frame, text="Node number " + str(entry) + " :", height=Node_label_height, width=15, font=Node_label_font, bg="#49B265", fg="white")
+        Node_Label_children.grid(column=0, row=entry+3, padx=4, pady=3, columnspan=2)
+        Node_X_coor_entry = Entry(main_frame, width=15, font=Node_label_font)
+        Node_X_coor_entry.grid(column=2, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Node_Y_coor_entry = Entry(main_frame, width=15, font=Node_label_font)
+        Node_Y_coor_entry.grid(column=4, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+    Update_properties_button = Button(main_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10), command=lambda: destroy_all_widget(main_frame))
+    Update_properties_button.grid(column=0, row=NumberOfEntry+3, columnspan=6, padx=10, pady=10)
