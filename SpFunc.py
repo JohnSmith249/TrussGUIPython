@@ -178,3 +178,7 @@ def process_data_and_solve():
     my_truss.solve_and_plot()
     results = Result(my_truss)
     print(results)
+
+    with open('Result_data.txt','w') as data_file:
+        data_file.write("Global Stiffness Matrix")
+        data_file.write(str(results))

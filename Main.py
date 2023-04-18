@@ -1,11 +1,15 @@
 from tkinter import *
 from SpFunc import *
 from tkinter import ttk
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.figure import Figure
 
 
 root = Tk()
 
-root.geometry('1200x650')
+root.geometry('1200x630')
 root.title('TRUSS ANALYSIS')
 root.configure(bg='#b3bec2')
 root.iconbitmap('favicon.ico')
@@ -30,12 +34,25 @@ Frame_height = 600
 frame_name_list = ["properties_frame", "node_frame", "element_frame", "support_frame", "load_frame", "solve_frame"]
 onscreen_frame = "properties_frame"
 
+coordinates_test_data = [(0, 0), (290, -90), (815, 127.5), (290, 345), (0, 255), (220.836, 127.5)]
+fig = Figure(figsize=(7,5), dpi=100)
+ax = fig.add_subplot()
+ax.set_xlabel("X axis")
+ax.set_ylabel("Y axis")
+ax.set_title("Element vizualization")
+ax.plot(coordinates_test_data[0][0], coordinates_test_data[0][1], marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
+canvas = FigureCanvasTkAgg(fig, root)
+toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
+toolbar.update()
+
+canvas.get_tk_widget().grid(column=2, row=0, padx=50, pady=50)
+# toolbar.grid(column=2, row=0)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
 properties_frame = LabelFrame(working_tab, text='PROPERTIES', padx=5, pady=5, bg='#643c6a', height=Frame_height, width=Frame_width,
                    relief=FLAT, fg='white', font=('regular', font_size))
-properties_frame.grid(column=1, row=0)
+properties_frame.grid(column=1, row=0, rowspan=2)
 properties_frame.grid_propagate(False)
 
 # properties_frame = create_scrollbar_frame(properties_frame, Frame_height - 30, Frame_width, '#643c6a')
@@ -207,7 +224,7 @@ def create_coor_info_entry():
 NumberOfNode_Entry = Entry(node_frame, width=Node_entry_width, font=Node_entry_font)
 NumberOfNode_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
 
-node_frame.grid(column=1, row=0)
+node_frame.grid(column=1, row=0, rowspan=2)
 node_frame.grid_propagate(False)
 
 Node_info_panel = Label(node_frame, text="Enter number of nodes :", height=Node_label_height, width=20, font=Node_label_font, bg="#49B265", fg="white")
@@ -277,7 +294,7 @@ def create_element_info_entry():
 NumberOfElement_Entry = Entry(element_frame, width=Element_entry_width, font=Element_entry_font)
 NumberOfElement_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
 
-element_frame.grid(column=1, row=0)
+element_frame.grid(column=1, row=0, rowspan=2)
 element_frame.grid_propagate(False)
 
 Node_info_panel = Label(element_frame, text="Enter number of nodes :", height=Element_label_height, width=20, font=Element_label_font, bg='#167288', fg="white")
@@ -347,7 +364,7 @@ def create_Support_info_entry():
 NumberOfSupport_Entry = Entry(support_frame, width=Support_entry_width, font=Support_entry_font)
 NumberOfSupport_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
 
-support_frame.grid(column=1, row=0)
+support_frame.grid(column=1, row=0, rowspan=2)
 support_frame.grid_propagate(False)
 
 Node_info_panel = Label(support_frame, text="Enter number of nodes :", height=Support_label_height, width=20, font=Support_label_font, bg='#167288', fg="white")
@@ -424,7 +441,7 @@ def create_Load_info_entry():
 NumberOfLoad_Entry = Entry(Load_frame, width=7, font=Load_entry_font)
 NumberOfLoad_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
 
-Load_frame.grid(column=1, row=0)
+Load_frame.grid(column=1, row=0, rowspan=2)
 Load_frame.grid_propagate(False)
 
 Node_info_panel = Label(Load_frame, text="Enter number of apply load nodes :", height=Load_label_height, width=25, font=Load_label_font, bg='#167288', fg="white")
@@ -442,7 +459,7 @@ Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
 
 solve_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg='#2c8160', height=Frame_height, width=Frame_width,
                    relief=FLAT, fg='white', font=('regular', font_size))
-solve_frame.grid(column=1, row=0)
+solve_frame.grid(column=1, row=0, rowspan=2)
 solve_frame.grid_propagate(False)
 
 Solve_button = Button(solve_frame, text="SOLVE !!!", height=4, width=25, bg='#df2525', fg="white", command=process_data_and_solve)
