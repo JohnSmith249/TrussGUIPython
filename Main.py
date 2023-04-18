@@ -2,6 +2,7 @@ from tkinter import *
 from SpFunc import *
 from tkinter import ttk
 
+
 root = Tk()
 
 root.geometry('1200x650')
@@ -11,10 +12,6 @@ root.iconbitmap('favicon.ico')
 
 working_tab = ttk.Notebook(root)
 working_tab.grid(column=0, row=0)
-# frame = LabelFrame(root, text='BUTTON', padx=10, pady=5, bg='white', height=600, width=200,
-#                    relief=FLAT, fg='black')
-# frame.grid(column=0, row=0)
-# frame.grid_propagate(False)
 
 button_height = 2
 button_width = 18
@@ -41,86 +38,405 @@ properties_frame = LabelFrame(working_tab, text='PROPERTIES', padx=5, pady=5, bg
 properties_frame.grid(column=1, row=0)
 properties_frame.grid_propagate(False)
 
-Main_properties_frame = create_scrollbar_frame(properties_frame, Frame_height - 30, Frame_width, '#643c6a')
+# properties_frame = create_scrollbar_frame(properties_frame, Frame_height - 30, Frame_width, '#643c6a')
 
-Unit_label = Label(Main_properties_frame, text="Unit (U)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
-Area_label = Label(Main_properties_frame, text="Area (A)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
-Young_modulus_lable = Label(Main_properties_frame, text="Young Modulus (E)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
+Unit_label = Label(properties_frame, text="Unit (U)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
+Area_label = Label(properties_frame, text="Area (A)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
+Young_modulus_lable = Label(properties_frame, text="Young Modulus (E)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
 
 Unit_label.grid(column=0, row=0, pady=10, padx=5)
 Area_label.grid(column=0, row=1, pady=10, padx=5)
 Young_modulus_lable.grid(column=0, row=2, pady=10, padx=5)
 
+Unit_option_list = ["mm, N, Pa, kg", "in, N, psi, lb"]
+Unit_value = StringVar(root)
+Unit_value.set("Chose Unit system")
 
-Unit_entry = Entry(Main_properties_frame, width=entry_width, font=('regular', entry_font_size))
-Area_entry = Entry(Main_properties_frame, width=entry_width, font=('regular', entry_font_size))
-Young_modulus_entry = Entry(Main_properties_frame, width=entry_width, font=('regular', entry_font_size))
+Unit_menu = OptionMenu(properties_frame, Unit_value, *Unit_option_list)
+Unit_menu.config(width=entry_width, font=('regular', entry_font_size))
 
-Unit_entry.grid(column=1, row=0, padx=15, ipady=5)
-Area_entry.grid(column=1, row=1, ipady=5)
-Young_modulus_entry.grid(column=1, row=2, ipady=5)
+Area_entry = Entry(properties_frame, width=entry_width, font=('regular', entry_font_size))
+Young_modulus_entry = Entry(properties_frame, width=entry_width, font=('regular', entry_font_size))
 
-Update_properties_button = Button(Main_properties_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
+Unit_menu.grid(column=1, row=0, padx=15, ipady=5)
+Area_entry.grid(column=1, row=1, ipady=5, padx=15)
+Young_modulus_entry.grid(column=1, row=2, ipady=5, padx=15)
+
+def record_properties_data():
+
+    global Unit_value
+    global Area_entry
+    global Young_modulus_entry
+
+    with open('Properties_data.txt','w') as data_file:
+        data_file.write("Properties Data \n")
+        data_file.write("\n")
+        data_file.write("*"*50)
+        data_file.write("   - Unit System: " + str(Unit_value.get()) + "\n")
+        data_file.write("   - Area Value : " + str(Area_entry.get()) + "\n")
+        data_file.write("   - Young modulus: " + str(Young_modulus_entry.get()) + "\n")
+        data_file.write("*"*50)
+
+Update_properties_button = Button(properties_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10), command=record_properties_data)
 Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
 node_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg='#167288', height=Frame_height, width=Frame_width,
                    relief=FLAT, fg='white', font=('regular', font_size))
+
 Node_entry_width = 15
 Node_entry_font = ('regular', 15)
 Node_label_font = ('regular', 10)
 Node_label_height = 2
 
+def record_data(frame, mode):
+    raw_data = []
+    for widget in frame.winfo_children():
+        if widget.winfo_class() == 'Entry':
+            raw_data.append(widget.get())
+    print(raw_data)
+    
+    if mode == 'node':
+        data = process_data(raw_data, 2)
+        x_coor = data[0]
+        y_coor = data[1]
+        # print(x_coor)
+        # print(y_coor)
+        with open('Node_data.txt', 'w+') as data_file:
+            text = "Node Coordinate data"
+            label_text = ' '*10 + "node number" + ' '*10 + "X coordinate" + ' '*10 + "Y coordinate" + "\n"
+            data_file.write(text)
+            data_file.write("\n")
+            data_file.write(label_text)
+            for i in range(len(x_coor)):
+                data_text = ' '*10 + "node " + str(i) + ' '*22 + str(x_coor[i]) + ' '*22 + str(y_coor[i]) + "\n"
+                data_file.write(data_text)
+
+    elif mode == 'load':
+        data = process_data(raw_data, 3)
+        node_number = data[0]
+        force_X = data[1]
+        force_Y = data[2]
+        with open('Load_data.txt', 'w+') as data_file:
+            text = "Load data"
+            label_text = ' '*10 + "node number" + ' '*10 + "X Force" + ' '*10 + "Y Force" + "\n"
+            data_file.write(text)
+            data_file.write("\n")
+            data_file.write(label_text)
+            for i in range(len(node_number)):
+                data_text = ' '*10 + "node " + str(node_number[i]) + ' '*18 + str(force_X[i]) + ' '*16 + str(force_Y[i]) + "\n"
+                data_file.write(data_text)
+
+    elif mode == 'support':
+        data = process_data(raw_data, 2)
+        node_number = data[0]
+        type_of_support = data[1]
+        with open('support_data.txt', 'w+') as data_file:
+            text = "Support data"
+            label_text = ' '*10 + "node number" + ' '*10 + "type of support" + "\n"
+            data_file.write(text)
+            data_file.write("\n")
+            data_file.write(label_text)
+            for i in range(len(node_number)):
+                data_text = ' '*10 + "node " + str(node_number[i]) + ' '*22 + str(type_of_support[i]) + "\n"
+                data_file.write(data_text)
+    
+    elif mode == 'element':
+        data = process_data(raw_data, 2)
+        begin_node = data[0]
+        end_node = data[1]
+        with open('Element_data.txt', 'w+') as data_file:
+            text = "Element data"
+            label_text = ' '*10 + "element number" + ' '*10 + "begin node" + ' '*10 + "end node" + "\n"
+            data_file.write(text)
+            data_file.write("\n")
+            data_file.write(label_text)
+            for i in range(len(begin_node)):
+                data_text = ' '*10 + "element " + str(i) + ' '*19 + str(begin_node[i]) + ' '*19 + str(end_node[i]) + "\n"
+                data_file.write(data_text)
+
+
+def create_coor_info_entry():
+
+    global NumberOfNode_Entry
+    global node_frame
+
+    try:
+        NumberOfEntry = int(NumberOfNode_Entry.get())
+        # destroy_all(main_frame)
+    except:
+        print("Invalid data !!!")   
+
+
+    my_canvas = Canvas(node_frame, height=570, width=380, bg='#167288')
+    my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+    # Add A Scrollbar to the canvas
+    my_scrollbar = ttk.Scrollbar(node_frame, orient=VERTICAL, command=my_canvas.yview)
+    my_scrollbar.pack(side=RIGHT, fill=Y)
+
+    # Configure the canvas
+    my_canvas.configure(yscrollcommand=my_scrollbar.set)
+    my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox('all')))
+
+    # Create another frame inside the canvas
+    main_frame = Frame(my_canvas, bg='#167288')
+
+    # Add that new frame to a window in the canvas
+    my_canvas.create_window((0,0), window=main_frame, anchor="nw")
+
+    Node_label_font = ('regular', 10)
+    Node_label_height = 2
+    
+    X_label = Label(main_frame, text="X Coordinate", height=Node_label_height, width=10, font=Node_label_font, bg="#49B265", fg="white")
+    Y_label = Label(main_frame, text="Y Coordinate", height=Node_label_height, width=10, font=Node_label_font, bg="#49B265", fg="white")
+    X_label.grid(column=2, row=2, padx=4, pady=10, columnspan=2)
+    Y_label.grid(column=4, row=2, padx=4, pady=10, columnspan=2)    
+
+    for entry in range(1, NumberOfEntry+1):
+        Node_Label_children = Label(main_frame, text="Node number " + str(entry) + " :", height=Node_label_height, width=15, font=Node_label_font, bg="#49B265", fg="white")
+        Node_Label_children.grid(column=0, row=entry+3, padx=4, pady=3, columnspan=2)
+        Node_X_coor_entry = Entry(main_frame, width=15, font=Node_label_font)
+        Node_X_coor_entry.grid(column=2, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Node_Y_coor_entry = Entry(main_frame, width=15, font=Node_label_font)
+        Node_Y_coor_entry.grid(column=4, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+    Update_properties_button = Button(main_frame, width=15, height=2, text="UPDATE !!!", bg='#df2525', fg="white", font=('regular', 10), command=lambda:record_data(main_frame,'node'))
+    Update_properties_button.grid(column=0, row=NumberOfEntry+4, columnspan=6, padx=10, pady=10)
+
+NumberOfNode_Entry = Entry(node_frame, width=Node_entry_width, font=Node_entry_font)
+NumberOfNode_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
+
 node_frame.grid(column=1, row=0)
 node_frame.grid_propagate(False)
 
-Main_node_frame = create_scrollbar_frame(node_frame, 570, 310, '#167288')
-
-Node_info_panel = Label(Main_node_frame, text="Enter number of nodes :", height=Node_label_height, width=20, font=Node_label_font, bg="#49B265", fg="white")
+Node_info_panel = Label(node_frame, text="Enter number of nodes :", height=Node_label_height, width=20, font=Node_label_font, bg="#49B265", fg="white")
 Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
 
-NumberOfNode_Entry = Entry(Main_node_frame, width=Node_entry_width, font=Node_entry_font)
-NumberOfNode_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3) 
-
-Okay_button = Button(Main_node_frame, width=43, height=2, text="OKAY !!!", bg="#FFD75F", fg="white", font=('regular',10), command=lambda: create_coor_info_entry(NumberOfNode_Entry, Main_node_frame))
+Okay_button = Button(node_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_coor_info_entry)
 Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
-element_frame = LabelFrame(working_tab, text='PROPERTIES', padx=5, pady=5, bg='#3cb464', height=Frame_height, width=Frame_width,
+element_frame = LabelFrame(working_tab, text='ELEMENT INFO', padx=5, pady=5, bg='#3cb464', height=Frame_height, width=Frame_width,
                    relief=FLAT, fg='white', font=('regular', font_size))
 element_frame.grid(column=1, row=0)
 element_frame.grid_propagate(False)
 
-Main_element_frame = create_scrollbar_frame(element_frame, Frame_height - 30, Frame_width, '#3cb464')
+Element_entry_width = 15
+Element_entry_font = ('regular', 15)
+Element_label_font = ('regular', 10)
+Element_label_height = 2
 
-Update_properties_button = Button(Main_element_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
-Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
+def create_element_info_entry():
+
+    global NumberOfElement_Entry
+    global element_frame
+
+    try:
+        NumberOfEntry = int(NumberOfElement_Entry.get())
+        # destroy_all(main_frame)
+    except:
+        print("Invalid data !!!")   
+
+    my_canvas = Canvas(element_frame, height=570, width=380, bg='#3cb464')
+    my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+    # Add A Scrollbar to the canvas
+    my_scrollbar = ttk.Scrollbar(element_frame, orient=VERTICAL, command=my_canvas.yview)
+    my_scrollbar.pack(side=RIGHT, fill=Y)
+
+    # Configure the canvas
+    my_canvas.configure(yscrollcommand=my_scrollbar.set)
+    my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox('all')))
+
+    # Create another frame inside the canvas
+    main_frame = Frame(my_canvas, bg='#3cb464')
+
+    # Add that new frame to a window in the canvas
+    my_canvas.create_window((0,0), window=main_frame, anchor="nw")
+
+    Element_label_font = ('regular', 10)
+    Element_label_height = 2
+    
+    begin_label = Label(main_frame, text="Begin Node", height=Element_label_height, width=10, font=Element_label_font, bg='#167288', fg="white")
+    end_label = Label(main_frame, text="End Node", height=Element_label_height, width=10, font=Element_label_font, bg='#167288', fg="white")
+    begin_label.grid(column=2, row=2, padx=4, pady=10, columnspan=2)
+    end_label.grid(column=4, row=2, padx=4, pady=10, columnspan=2)    
+
+    for entry in range(1, NumberOfEntry+1):
+        Element_Label_children = Label(main_frame, text="Element number " + str(entry) + " :", height=Element_label_height, width=15, font=Element_label_font, bg='#167288', fg="white")
+        Element_Label_children.grid(column=0, row=entry+3, padx=4, pady=3, columnspan=2)
+        Node_X_coor_entry = Entry(main_frame, width=15, font=Element_label_font)
+        Node_X_coor_entry.grid(column=2, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Node_Y_coor_entry = Entry(main_frame, width=15, font=Element_label_font)
+        Node_Y_coor_entry.grid(column=4, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+    Update_properties_button = Button(main_frame, width=15, height=2, text="UPDATE !!!", bg='#df2525', fg="white", font=('regular', 10), command=lambda:record_data(main_frame,'element'))
+    Update_properties_button.grid(column=0, row=NumberOfEntry+4, columnspan=6, padx=10, pady=10)
+
+NumberOfElement_Entry = Entry(element_frame, width=Element_entry_width, font=Element_entry_font)
+NumberOfElement_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
+
+element_frame.grid(column=1, row=0)
+element_frame.grid_propagate(False)
+
+Node_info_panel = Label(element_frame, text="Enter number of nodes :", height=Element_label_height, width=20, font=Element_label_font, bg='#167288', fg="white")
+Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
+
+Okay_button = Button(element_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_element_info_entry)
+Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
-support_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg='#f6993f', height=Frame_height, width=Frame_width,
+support_frame = LabelFrame(working_tab, text='SUPPORT INFO', padx=5, pady=5, bg='#f6993f', height=Frame_height, width=Frame_width,
                    relief=FLAT, fg='white', font=('regular', font_size))
 support_frame.grid(column=1, row=0)
 support_frame.grid_propagate(False)
 
-Main_support_frame = create_scrollbar_frame(support_frame, Frame_height - 30, Frame_width, '#f6993f')
+Support_entry_width = 15
+Support_entry_font = ('regular', 15)
+Support_label_font = ('regular', 10)
+Support_label_height = 2
 
-Update_properties_button = Button(Main_support_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
-Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
+def create_Support_info_entry():
+
+    global NumberOfSupport_Entry
+    global Support_frame
+
+    try:
+        NumberOfEntry = int(NumberOfSupport_Entry.get())
+        # destroy_all(main_frame)
+    except:
+        print("Invalid data !!!")   
+
+    my_canvas = Canvas(support_frame, height=570, width=380, bg='#3cb464')
+    my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+    # Add A Scrollbar to the canvas
+    my_scrollbar = ttk.Scrollbar(support_frame, orient=VERTICAL, command=my_canvas.yview)
+    my_scrollbar.pack(side=RIGHT, fill=Y)
+
+    # Configure the canvas
+    my_canvas.configure(yscrollcommand=my_scrollbar.set)
+    my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox('all')))
+
+    # Create another frame inside the canvas
+    main_frame = Frame(my_canvas, bg='#3cb464')
+
+    # Add that new frame to a window in the canvas
+    my_canvas.create_window((0,0), window=main_frame, anchor="nw")
+
+    Support_label_font = ('regular', 10)
+    Support_label_height = 2
+    
+    node_support_label = Label(main_frame, text="Supported Node", height=Support_label_height, width=12, font=Support_label_font, bg='#167288', fg="white")
+    type_of_support_label = Label(main_frame, text="Type of Support", height=Support_label_height, width=15, font=Support_label_font, bg='#167288', fg="white")
+    node_support_label.grid(column=2, row=2, padx=4, pady=10, columnspan=2)
+    type_of_support_label.grid(column=4, row=2, padx=4, pady=10, columnspan=2)    
+
+    for entry in range(1, NumberOfEntry+1):
+        Support_Label_children = Label(main_frame, text="Support number " + str(entry) + " :", height=Support_label_height, width=15, font=Support_label_font, bg='#167288', fg="white")
+        Support_Label_children.grid(column=0, row=entry+3, padx=4, pady=3, columnspan=2)
+        Node_X_coor_entry = Entry(main_frame, width=15, font=Support_label_font)
+        Node_X_coor_entry.grid(column=2, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Node_Y_coor_entry = Entry(main_frame, width=15, font=Support_label_font)
+        Node_Y_coor_entry.grid(column=4, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+    Update_properties_button = Button(main_frame, width=15, height=2, text="UPDATE !!!", bg='#df2525', fg="white", font=('regular', 10), command=lambda:record_data(main_frame,'support'))
+    Update_properties_button.grid(column=0, row=NumberOfEntry+4, columnspan=6, padx=10, pady=10)
+
+NumberOfSupport_Entry = Entry(support_frame, width=Support_entry_width, font=Support_entry_font)
+NumberOfSupport_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
+
+support_frame.grid(column=1, row=0)
+support_frame.grid_propagate(False)
+
+Node_info_panel = Label(support_frame, text="Enter number of nodes :", height=Support_label_height, width=20, font=Support_label_font, bg='#167288', fg="white")
+Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
+
+Okay_button = Button(support_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_Support_info_entry)
+Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
+
+# Main_support_frame = create_scrollbar_frame(support_frame, Frame_height - 30, Frame_width, '#f6993f')
+
+# Update_properties_button = Button(Main_support_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
+# Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
-load_frame = LabelFrame(working_tab, text='PROPERTIES', padx=5, pady=5, bg='#f66d9b', height=Frame_height, width=Frame_width,
+Load_frame = LabelFrame(working_tab, text='LOAD INFO', padx=5, pady=5, bg='#af7c74', height=Frame_height, width=Frame_width,
                    relief=FLAT, fg='white', font=('regular', font_size))
-load_frame.grid(column=1, row=0)
-load_frame.grid_propagate(False)
+Load_frame.grid(column=1, row=0)
+Load_frame.grid_propagate(False)
 
-Main_load_frame = create_scrollbar_frame(load_frame, Frame_height - 30, Frame_width, '#f66d9b')
+Load_entry_width = 15
+Load_entry_font = ('regular', 15)
+Load_label_font = ('regular', 10)
+Load_label_height = 2
 
-Update_properties_button = Button(Main_load_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
-Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
+def create_Load_info_entry():
+
+    global NumberOfLoad_Entry
+    global Load_frame
+
+    try:
+        NumberOfEntry = int(NumberOfLoad_Entry.get())
+        # destroy_all(main_frame)
+    except:
+        print("Invalid data !!!")   
+
+    my_canvas = Canvas(Load_frame, height=570, width=380, bg='#af7c74')
+    my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+    # Add A Scrollbar to the canvas
+    my_scrollbar = ttk.Scrollbar(Load_frame, orient=VERTICAL, command=my_canvas.yview)
+    my_scrollbar.pack(side=RIGHT, fill=Y)
+
+    # Configure the canvas
+    my_canvas.configure(yscrollcommand=my_scrollbar.set)
+    my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox('all')))
+
+    # Create another frame inside the canvas
+    main_frame = Frame(my_canvas, bg='#af7c74')
+
+    # Add that new frame to a window in the canvas
+    my_canvas.create_window((0,0), window=main_frame, anchor="nw")
+
+    Load_label_font = ('regular', 10)
+    Load_label_height = 2
+    
+    Node_applied_load_label = Label(main_frame, text="Loaded Node", height=Load_label_height, width=12, font=Load_label_font, bg='#167288', fg="white")
+    force_in_horizontal = Label(main_frame, text="Horizontal Force", height=Load_label_height, width=15, font=Load_label_font, bg='#167288', fg="white")
+    force_in_vertical = Label(main_frame, text="Vertical Force", height=Load_label_height, width=15, font=Load_label_font, bg='#167288', fg="white")
+    Node_applied_load_label.grid(column=0, row=2, padx=4, pady=10, columnspan=2)
+    force_in_horizontal.grid(column=2, row=2, padx=4, pady=10, columnspan=2)
+    force_in_vertical.grid(column=4, row=2, padx=4, pady=10, columnspan=2)    
+
+    for entry in range(1, NumberOfEntry+1):
+        Node_applied_load = Entry(main_frame, width=15, font=Load_label_font)
+        Node_applied_load.grid(column=0, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Froce_in_X = Entry(main_frame, width=15, font=Load_label_font)
+        Froce_in_X.grid(column=2, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Froce_in_Y = Entry(main_frame, width=15, font=Load_label_font)
+        Froce_in_Y.grid(column=4, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+    Update_properties_button = Button(main_frame, width=15, height=2, text="UPDATE !!!", bg='#df2525', fg="white", font=('regular', 10), command=lambda:record_data(main_frame,'load'))
+    Update_properties_button.grid(column=0, row=NumberOfEntry+4, columnspan=6, padx=10, pady=10)
+
+NumberOfLoad_Entry = Entry(Load_frame, width=7, font=Load_entry_font)
+NumberOfLoad_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
+
+Load_frame.grid(column=1, row=0)
+Load_frame.grid_propagate(False)
+
+Node_info_panel = Label(Load_frame, text="Enter number of apply load nodes :", height=Load_label_height, width=25, font=Load_label_font, bg='#167288', fg="white")
+Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
+
+Okay_button = Button(Load_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_Load_info_entry)
+Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
+
+# Main_load_frame = create_scrollbar_frame(load_frame, Frame_height - 30, Frame_width, '#f66d9b')
+
+# Update_properties_button = Button(Main_load_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
+# Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
@@ -129,10 +445,12 @@ solve_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg=
 solve_frame.grid(column=1, row=0)
 solve_frame.grid_propagate(False)
 
-Main_solve_frame = create_scrollbar_frame(solve_frame, Frame_height - 30, Frame_width, '#2c8160')
+Solve_button = Button(solve_frame, text="SOLVE !!!", height=4, width=25, bg='#df2525', fg="white", command=process_data_and_solve)
+Solve_button.pack(fill="none", expand=True)
+# Main_solve_frame = create_scrollbar_frame(solve_frame, Frame_height - 30, Frame_width, '#2c8160')
 
-Update_properties_button = Button(Main_solve_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
-Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
+# Update_properties_button = Button(Main_solve_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
+# Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
 
 ##------------------------------------------------------------------------------------------------------------------------##
 
@@ -143,7 +461,7 @@ working_tab.add(properties_frame, text="Properties")
 working_tab.add(node_frame, text="Node Info")
 working_tab.add(element_frame, text="Element Info")
 working_tab.add(support_frame, text="Support Info")
-working_tab.add(load_frame, text="Load Info")
+working_tab.add(Load_frame, text="Load Info")
 working_tab.add(solve_frame, text="Solve Info")
 
 ##------------------------------------------------------------------------------------------------------------------------##
@@ -156,6 +474,7 @@ def name_of_active_widget():
         print("*"*50)
         print(type(widget))
         print("*"*50)
+    
 ##------------------------------------------------------------------------------------------------------------------------##
 
 root.mainloop()

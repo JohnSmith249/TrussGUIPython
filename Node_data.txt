@@ -1,0 +1,8 @@
+Node Coordinate data
+          node number          X coordinate          Y coordinate
+          node 0                      0                      0
+          node 1                      290                      -90
+          node 2                      815                      127.5
+          node 3                      290                      345
+          node 4                      0                      255
+          node 5                      220.836                      127.5

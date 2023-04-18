@@ -1,0 +1,5 @@
+Support data
+          node number          type of support
+          node 1                      V
+          node 6                      P
+          node 3                      H
