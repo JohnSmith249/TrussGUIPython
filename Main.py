@@ -35,7 +35,7 @@ frame_name_list = ["properties_frame", "node_frame", "element_frame", "support_f
 onscreen_frame = "properties_frame"
 
 coordinates_test_data = [(0, 0), (290, -90), (815, 127.5), (290, 345), (0, 255), (220.836, 127.5)]
-fig = Figure(figsize=(7,5), dpi=100)
+fig = Figure(figsize=(8,6), dpi=100)
 ax = fig.add_subplot()
 ax.set_xlabel("X axis")
 ax.set_ylabel("Y axis")
@@ -45,7 +45,7 @@ canvas = FigureCanvasTkAgg(fig, root)
 toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
 toolbar.update()
 
-canvas.get_tk_widget().grid(column=2, row=0, padx=50, pady=50)
+canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
 # toolbar.grid(column=2, row=0)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
