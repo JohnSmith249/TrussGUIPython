@@ -1,6 +1,6 @@
 Properties Data 
 
-**************************************************   - Unit System: mm, N, Pa, kg
+**************************************************   - Unit System: Chose Unit system
    - Area Value : 2
    - Young modulus: 2e7
 **************************************************
