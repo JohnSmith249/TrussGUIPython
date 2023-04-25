@@ -5,12 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
-from SolveEngine01 import SolveEngine01
-
+from anastruct import SystemElements
+from SolveEngine01 import SolveEngine01, Read_data
+from SolveEngine02 import Solve_Engine_02
+import os
 
 root = Tk()
 
-root.geometry('1200x630')
+root.geometry('1300x670')
 root.title('TRUSS ANALYSIS')
 root.configure(bg='#b3bec2')
 root.iconbitmap('favicon.ico')
@@ -36,17 +38,17 @@ frame_name_list = ["properties_frame", "node_frame", "element_frame", "support_f
 onscreen_frame = "properties_frame"
 
 # coordinates_test_data = [(0, 0), (290, -90), (815, 127.5), (290, 345), (0, 255), (220.836, 127.5)]
-# fig = Figure(figsize=(8,6), dpi=100)
+fig = Figure(figsize=(8,6), dpi=100)
 # ax = fig.add_subplot()
 # ax.set_xlabel("X axis")
 # ax.set_ylabel("Y axis")
 # ax.set_title("Element vizualization")
 # ax.plot(coordinates_test_data[0][0], coordinates_test_data[0][1], marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
-# canvas = FigureCanvasTkAgg(fig, root)
+canvas = FigureCanvasTkAgg(fig, root)
 # toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
 # toolbar.update()
 
-# canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
+canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
 # toolbar.grid(column=2, row=0)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
@@ -80,6 +82,15 @@ Unit_menu.grid(column=1, row=0, padx=15, ipady=5)
 Area_entry.grid(column=1, row=1, ipady=5, padx=15)
 Young_modulus_entry.grid(column=1, row=2, ipady=5, padx=15)
 
+Node_data = Read_data("nodes")
+Properties_data = Read_data("properties")
+Element_data = Read_data("elements")
+Support_data = Read_data("supports")
+Load_data = Read_data("loads")
+
+A = Properties_data[0]
+E = Properties_data[1]
+
 def record_properties_data():
 
     global Unit_value
@@ -108,13 +119,58 @@ Node_entry_font = ('regular', 15)
 Node_label_font = ('regular', 10)
 Node_label_height = 2
 
+def open_result():
+    os.startfile("Full_result.txt")
+    os.startfile("Result_log.txt")
+
+def Solve_and_show():
+    After_solve_frame = Frame(root, padx=5, pady=5, bg='#3d5a80', height=600, width=800,
+                   relief=FLAT)
+    After_solve_frame.grid(column=2, row=0, padx=5, pady=10)
+    Figures = Solve_Engine_02('graph')
+    Result_show_tab = ttk.Notebook(After_solve_frame)
+    Result_show_tab.pack(padx=5, pady=5)
+
+    structure = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+    axial_force = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+    bending_moment = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+    shear_force = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+    displacement = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+
+    structure.pack(fill="both", expand=1)
+    axial_force.pack(fill="both", expand=1)
+    # bending_moment.pack(fill="both", expand=1)
+    # shear_force.pack(fill="both", expand=1)
+    displacement.pack(fill="both", expand=1)
+
+    Frames = [structure, axial_force, displacement]
+    Frames_name = ["structure", "axial_force", "displacement"]
+
+    Result_show_tab.add(structure, text="STRUCTURE")
+    Result_show_tab.add(axial_force, text="AXIAL FORCE")
+    # Result_show_tab.add(bending_moment, text="BENDING MOMENT")
+    # Result_show_tab.add(shear_force, text="SHEAR FORCE")
+    Result_show_tab.add(displacement, text="DISPLACMENT")
+
+    global canvas
+
+    for i in range(len(Figures)):
+        try:
+            canvas.get_tk_widget().grid_forget()
+        except:
+            pass
+        print(Figures[i])
+        canvas = FigureCanvasTkAgg(Figures[i], Frames[i])
+        canvas.get_tk_widget().pack(fill="both", expand=1)
+
 def record_data(frame, mode):
     raw_data = []
     for widget in frame.winfo_children():
         if widget.winfo_class() == 'Entry':
             raw_data.append(widget.get())
     print(raw_data)
-    
+    global canvas
+
     if mode == 'node':
         data = process_data(raw_data, 2)
         x_coor = data[0]
@@ -145,6 +201,28 @@ def record_data(frame, mode):
             for i in range(len(node_number)):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*18 + str(force_X[i]) + ' '*16 + str(force_Y[i]) + "\n"
                 data_file.write(data_text)
+        
+        ss = SystemElements(EA=E*A, figsize=(8,6))
+        for i in range(len(Element_data)):
+            begin = Element_data[i][0]
+            end = Element_data[i][1]
+            begin_coor = list(Node_data[begin])
+            end_coor = list(Node_data[end])
+            ss.add_truss_element(location=[begin_coor, end_coor])
+        
+        for i in range(len(Load_data)):
+            node_index = Load_data[i][0] + 1
+            Force_x = Load_data[i][1]
+            Force_y = Load_data[i][2]
+            ss.point_load(node_id=node_index, Fx=Force_x, Fy=Force_y)
+        fig = ss.show_structure(show=False)
+        
+        try:
+            canvas.get_tk_widget().grid_forget()
+        except:
+            pass
+        canvas = FigureCanvasTkAgg(fig, root)
+        canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
 
     elif mode == 'support':
         data = process_data(raw_data, 2)
@@ -159,6 +237,30 @@ def record_data(frame, mode):
             for i in range(len(node_number)):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*22 + str(type_of_support[i]) + "\n"
                 data_file.write(data_text)
+        ss = SystemElements(EA=E*A, figsize=(8,6))
+        for i in range(len(Element_data)):
+            begin = Element_data[i][0]
+            end = Element_data[i][1]
+            begin_coor = list(Node_data[begin])
+            end_coor = list(Node_data[end])
+            ss.add_truss_element(location=[begin_coor, end_coor])
+        for i in range(len(Support_data)):
+            node_index = Support_data[i][0] + 1
+            support_type = Support_data[i][1]
+            if support_type == 'P':
+                ss.add_support_hinged(node_id=node_index)
+            if support_type == 'V':
+                ss.add_support_roll(node_id=node_index, direction=2)
+            if support_type == 'H':
+                ss.add_support_roll(node_id=node_index, direction=1)
+        fig = ss.show_structure(show=False)
+        # global canvas
+        try:
+            canvas.get_tk_widget().grid_forget()
+        except:
+            pass
+        canvas = FigureCanvasTkAgg(fig, root)
+        canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
     
     elif mode == 'element':
         data = process_data(raw_data, 2)
@@ -173,6 +275,22 @@ def record_data(frame, mode):
             for i in range(len(begin_node)):
                 data_text = ' '*10 + "element " + str(i) + ' '*19 + str(begin_node[i]) + ' '*19 + str(end_node[i]) + "\n"
                 data_file.write(data_text)
+        ss = SystemElements(EA=E*A, figsize=(8,6))
+        for i in range(len(Element_data)):
+            begin = Element_data[i][0]
+            end = Element_data[i][1]
+            begin_coor = list(Node_data[begin])
+            end_coor = list(Node_data[end])
+            ss.add_truss_element(location=[begin_coor, end_coor])
+        # Show update on structure plot
+        fig = ss.show_structure(show=False)
+        # global canvas
+        try:
+            canvas.get_tk_widget().grid_forget()
+        except:
+            pass
+        canvas = FigureCanvasTkAgg(fig, root)
+        canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
 
 
 def create_coor_info_entry():
@@ -253,7 +371,6 @@ def create_element_info_entry():
 
     try:
         NumberOfEntry = int(NumberOfElement_Entry.get())
-        # destroy_all(main_frame)
     except:
         print("Invalid data !!!")   
 
@@ -374,11 +491,6 @@ Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
 Okay_button = Button(support_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_Support_info_entry)
 Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
 
-# Main_support_frame = create_scrollbar_frame(support_frame, Frame_height - 30, Frame_width, '#f6993f')
-
-# Update_properties_button = Button(Main_support_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
-# Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
-
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
 Load_frame = LabelFrame(working_tab, text='LOAD INFO', padx=5, pady=5, bg='#af7c74', height=Frame_height, width=Frame_width,
@@ -398,7 +510,6 @@ def create_Load_info_entry():
 
     try:
         NumberOfEntry = int(NumberOfLoad_Entry.get())
-        # destroy_all(main_frame)
     except:
         print("Invalid data !!!")   
 
@@ -451,11 +562,6 @@ Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
 Okay_button = Button(Load_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_Load_info_entry)
 Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
 
-# Main_load_frame = create_scrollbar_frame(load_frame, Frame_height - 30, Frame_width, '#f66d9b')
-
-# Update_properties_button = Button(Main_load_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
-# Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
-
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
 solve_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg='#3d5a80', height=Frame_height, width=Frame_width,
@@ -463,16 +569,14 @@ solve_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg=
 solve_frame.grid(column=1, row=0, rowspan=2)
 solve_frame.grid_propagate(False)
 
-Solve_button = Button(solve_frame, text="SOLVE !!!", height=4, width=25, bg='#2c8160', fg="white", command=SolveEngine01, font=('regular', 15))
+Solve_button = Button(solve_frame, text="SOLVE !!!", height=4, width=25, bg='#2c8160', fg="white", command=Solve_and_show, font=('regular', 15))
 Solve_button.pack(fill="none", expand=True)
+
+Export_button = Button(solve_frame, text="SHOW RESULT !!!", height=4, width=25, bg='#569DAA', fg="white", command=open_result, font=('regular', 15))
+Export_button.pack(fill="none", expand=True)
 
 Exit_button = Button(solve_frame, text="EXIT !!!", height=4, width=25, bg='#df2525', fg="white", command=root.destroy, font=('regular', 15))
 Exit_button.pack(fill="none", expand=True)
-# Main_solve_frame = create_scrollbar_frame(solve_frame, Frame_height - 30, Frame_width, '#2c8160')
-
-# Update_properties_button = Button(Main_solve_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))
-# Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
-
 ##------------------------------------------------------------------------------------------------------------------------##
 
 

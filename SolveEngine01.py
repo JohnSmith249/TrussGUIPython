@@ -204,7 +204,9 @@ def SolveEngine01():
         temp = (E/L) * np.dot(cosine_matrix, sub_displacement)
         Stress_matrix.append(temp)
     
-    Full_Result = [Displacment_matrix, Reaction_force, Stress_matrix]
+    Full_Result = [Displacment_matrix, Reaction_force, Stress_matrix, Total_stiffness_matrix]
+
+    return Full_Result
     with open("Result_log.txt", 'w') as f:
         f.write('*'*100)
         f.write('\n')
