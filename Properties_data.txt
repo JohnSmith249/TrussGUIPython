@@ -1,6 +1,6 @@
 Properties Data 
 
 **************************************************   - Unit System: Chose Unit system
-   - Area Value : 2
-   - Young modulus: 2e7
+   - Area Value : 1
+   - Young modulus: 295e5
 **************************************************

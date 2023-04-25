@@ -1,5 +1,5 @@
 Support data
           node number          type of support
-          node 1                      V
-          node 6                      P
-          node 3                      H
+          node 1                      P
+          node 4                      P
+          node 2                      V

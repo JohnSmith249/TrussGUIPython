@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
+from SolveEngine01 import SolveEngine01
 
 
 root = Tk()
@@ -34,18 +35,18 @@ Frame_height = 600
 frame_name_list = ["properties_frame", "node_frame", "element_frame", "support_frame", "load_frame", "solve_frame"]
 onscreen_frame = "properties_frame"
 
-coordinates_test_data = [(0, 0), (290, -90), (815, 127.5), (290, 345), (0, 255), (220.836, 127.5)]
-fig = Figure(figsize=(8,6), dpi=100)
-ax = fig.add_subplot()
-ax.set_xlabel("X axis")
-ax.set_ylabel("Y axis")
-ax.set_title("Element vizualization")
-ax.plot(coordinates_test_data[0][0], coordinates_test_data[0][1], marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
-canvas = FigureCanvasTkAgg(fig, root)
-toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
-toolbar.update()
+# coordinates_test_data = [(0, 0), (290, -90), (815, 127.5), (290, 345), (0, 255), (220.836, 127.5)]
+# fig = Figure(figsize=(8,6), dpi=100)
+# ax = fig.add_subplot()
+# ax.set_xlabel("X axis")
+# ax.set_ylabel("Y axis")
+# ax.set_title("Element vizualization")
+# ax.plot(coordinates_test_data[0][0], coordinates_test_data[0][1], marker="o", markersize=5, markeredgecolor="red", markerfacecolor="green")
+# canvas = FigureCanvasTkAgg(fig, root)
+# toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
+# toolbar.update()
 
-canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
+# canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
 # toolbar.grid(column=2, row=0)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
@@ -457,13 +458,16 @@ Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
-solve_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg='#2c8160', height=Frame_height, width=Frame_width,
+solve_frame = LabelFrame(working_tab, text='NODE PARAMETER', padx=5, pady=5, bg='#3d5a80', height=Frame_height, width=Frame_width,
                    relief=FLAT, fg='white', font=('regular', font_size))
 solve_frame.grid(column=1, row=0, rowspan=2)
 solve_frame.grid_propagate(False)
 
-Solve_button = Button(solve_frame, text="SOLVE !!!", height=4, width=25, bg='#df2525', fg="white", command=process_data_and_solve)
+Solve_button = Button(solve_frame, text="SOLVE !!!", height=4, width=25, bg='#2c8160', fg="white", command=SolveEngine01, font=('regular', 15))
 Solve_button.pack(fill="none", expand=True)
+
+Exit_button = Button(solve_frame, text="EXIT !!!", height=4, width=25, bg='#df2525', fg="white", command=root.destroy, font=('regular', 15))
+Exit_button.pack(fill="none", expand=True)
 # Main_solve_frame = create_scrollbar_frame(solve_frame, Frame_height - 30, Frame_width, '#2c8160')
 
 # Update_properties_button = Button(Main_solve_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10))

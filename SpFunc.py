@@ -144,7 +144,7 @@ def process_data_and_solve():
             supported_node = corespond_letter[node_number]
             support_type = str(i.split(' '*22)[1][0])
             if support_type == 'P':
-                support_command = 'pin'
+                support_command = 'pin_rotation'
                 support.append((supported_node, support_command))
             elif support_type == 'V':
                 support_command = 'roller'
