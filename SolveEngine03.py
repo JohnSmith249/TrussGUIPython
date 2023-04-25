@@ -1,26 +1,27 @@
 from SolveEngine01 import Read_data
 from anastruct import SystemElements
-from SolveEngine01 import SolveEngine01
 
-def Solve_Engine_02(key):
+def Solve_Engine_03():
 
     Node_data = Read_data("nodes")
     Properties_data = Read_data("properties")
     Element_data = Read_data("elements")
     Support_data = Read_data("supports")
     Load_data = Read_data("loads")
+    Q_load_data = Read_data("qload")
     
     A = Properties_data[0]
     E = Properties_data[1]
+    I = Properties_data[2]
 
-    ss = SystemElements(EA=E*A, figsize=(6,4))
+    ss = SystemElements(EA=E*A, EI=E*I, figsize=(6,4))
 
     for i in range(len(Element_data)):
         begin = Element_data[i][0]
         end = Element_data[i][1]
         begin_coor = list(Node_data[begin])
         end_coor = list(Node_data[end])
-        ss.add_truss_element(location=[begin_coor, end_coor])
+        ss.add_element(location=[begin_coor, end_coor])
 
     for i in range(len(Support_data)):
         node_index = Support_data[i][0] + 1
@@ -31,13 +32,32 @@ def Solve_Engine_02(key):
             ss.add_support_roll(node_id=node_index, direction=2)
         if support_type == 'H':
             ss.add_support_roll(node_id=node_index, direction=1)
+        if support_type == 'F':
+            ss.add_support_fixed(node_id=node_index)
 
     for i in range(len(Load_data)):
         node_index = Load_data[i][0] + 1
         Force_x = Load_data[i][1]
         Force_y = Load_data[i][2]
         ss.point_load(node_id=node_index, Fx=Force_x, Fy=Force_y)
+    
+    for i in range(len(Q_load_data)):
+        element_index = Q_load_data[i][0] + 1
+        Force_Value = Q_load_data[i][1]
+        Direction = Q_load_data[i][2]
+        # print(element_index)
+        # print(Force_Value)
+        # print(Direction)
+        print(Q_load_data)
+        if Direction == 'e':
+            ss.q_load(element_id=element_index, q=Force_Value, direction="element")
+        if Direction == 'x':
+            ss.q_load(element_id=element_index, q=Force_Value, direction='x')
+        if Direction == 'y':
+            ss.q_load(element_id=element_index, q=Force_Value, direction='y')
 
+    # ss.q_load(element_id=2, q=10000, direction="element")
+    # ss.show_structure()
     ss.solve()
 
     # for i in range(4):
@@ -46,8 +66,10 @@ def Solve_Engine_02(key):
     #     print("*"*40)
     Fig = [ss.show_structure(show=False),
     ss.show_axial_force(show=False),
-    ss.show_reaction_force(show=False),
-    ss.show_displacement(show=False)]
+    ss.show_bending_moment(show=False),
+    ss.show_shear_force(show=False),
+    ss.show_displacement(show=False),
+    ss.show_reaction_force(show=False)]
 
     Node_displacements = []
     Node_result_system = []
@@ -58,7 +80,7 @@ def Solve_Engine_02(key):
         Node_result_system.append(ss.get_node_results_system(node_id=i+1))
         Element_result.append(ss.get_element_results(element_id=i+1, verbose=True))
     
-    with open('Full_result.txt', 'w') as f:
+    with open('Full_beam_result.txt', 'w') as f:
         f.write('='*100 + '\n')
         text = "Node Dispalcements"
         f.write(f'{text:-^100}')
@@ -103,33 +125,33 @@ def Solve_Engine_02(key):
             f.write("maximum axial compression force : " + str(i['N']))
             f.write('\n' + '+'*100 + '\n'*1)
         
-        Solve_data = SolveEngine01()
+        # Solve_data = SolveEngine01()
 
-        f.write('\n'*5)
-        f.write('='*100 + '\n')
-        text = "Total Stiffness Matrix"
-        f.write(f'{text:-^100}')
-        f.write('\n')
-        f.write('='*100 + '\n'*3)
-        f.write('+'*100 + '\n')
-        f.write(str(Solve_data[-1]))
-        f.write('\n' + '+'*100 + '\n'*1)
+        # f.write('\n'*5)
+        # f.write('='*100 + '\n')
+        # text = "Total Stiffness Matrix"
+        # f.write(f'{text:-^100}')
+        # f.write('\n')
+        # f.write('='*100 + '\n'*3)
+        # f.write('+'*100 + '\n')
+        # f.write(str(Solve_data[-1]))
+        # f.write('\n' + '+'*100 + '\n'*1)
 
-        f.write('\n'*5)
-        f.write('='*100 + '\n')
-        text = "Stress matrix"
-        f.write(f'{text:-^100}')
-        f.write('\n')
-        f.write('='*100 + '\n'*3)
-        f.write('+'*100 + '\n')
-        f.write(str(Solve_data[2]))
-        f.write('\n' + '+'*100 + '\n'*1)
+        # f.write('\n'*5)
+        # f.write('='*100 + '\n')
+        # text = "Stress matrix"
+        # f.write(f'{text:-^100}')
+        # f.write('\n')
+        # f.write('='*100 + '\n'*3)
+        # f.write('+'*100 + '\n')
+        # f.write(str(Solve_data[2]))
+        # f.write('\n' + '+'*100 + '\n'*1)
 
 
-    if key == "graph":
-        return Fig
+    # if key == "graph":
+    return Fig
     
 
-Solve_Engine_02('graph')
+Solve_Engine_03()
 # ss.show_bending_moment(show=False),
 # ss.show_shear_force(show=False),

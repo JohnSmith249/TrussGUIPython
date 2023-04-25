@@ -58,10 +58,24 @@ def Read_data(keyword):
             data = data_file.readlines()
             Unit_sys = (data[2].split(':')[1]).replace(' ','')
             Area = float((data[3].split(':')[1]).replace(' ',''))
+            Inertia = float((data[4].split(':')[1]).replace(' ',''))
             Young_modulus = (data[4].split(':')[1]).replace(' ','')
             Young_data = Young_modulus.split('e')
             Young_modulus = float(Young_data[0]) * (10**int(Young_data[1]))
-        return (Area, Young_modulus)
+        return (Area, Young_modulus, Inertia)
+    elif keyword == "qload":
+        with open('QLoad_data.txt','r') as data_file:
+            qload = []
+            data = data_file.readlines()
+            data.remove(data[0])
+            data.remove(data[0])
+            for i in data:
+                element_number = int(i.split(' '*16)[0].split('node')[1]) - 1
+                # loaded_node = corespond_letter[node_number]
+                Force_X = float(i.split(' '*16)[1])
+                Force_Y = str((i.split(' '*16)[2]).split('\n')[0])
+                qload.append((element_number, Force_X, Force_Y))
+        return qload
 
 
 def compability_indexing(index_couple, index_list):

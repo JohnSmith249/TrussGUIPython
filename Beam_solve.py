@@ -6,14 +6,15 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 from anastruct import SystemElements
-from SolveEngine01 import SolveEngine01, Read_data
-from SolveEngine02 import Solve_Engine_02
+from SolveEngine01 import Read_data
+from SolveEngine03 import Solve_Engine_03
+
 import os
 
 root = Tk()
 
 root.geometry('1450x650')
-root.title('TRUSS ANALYSIS')
+root.title('BEAM SOLVER')
 root.configure(bg='#b3bec2')
 root.iconbitmap('favicon.ico')
 
@@ -62,10 +63,12 @@ properties_frame.grid_propagate(False)
 
 Unit_label = Label(properties_frame, text="Unit (U)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
 Area_label = Label(properties_frame, text="Area (A)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
+Inertia_label = Label(properties_frame, text="Inertia (I)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
 Young_modulus_lable = Label(properties_frame, text="Young Modulus (E)", height=label_height, width=label_witdth, bg='#49B265', fg='white', font=('regular', label_font_size))
 
 Unit_label.grid(column=0, row=0, pady=10, padx=5)
 Area_label.grid(column=0, row=1, pady=10, padx=5)
+Inertia_label.grid(column=0, row=3, pady=10, padx=5)
 Young_modulus_lable.grid(column=0, row=2, pady=10, padx=5)
 
 Unit_option_list = ["mm, N, Pa, kg", "in, N, psi, lb"]
@@ -77,9 +80,11 @@ Unit_menu.config(width=entry_width, font=('regular', entry_font_size))
 
 Area_entry = Entry(properties_frame, width=entry_width, font=('regular', entry_font_size))
 Young_modulus_entry = Entry(properties_frame, width=entry_width, font=('regular', entry_font_size))
+Inertia_entry = Entry(properties_frame, width=entry_width, font=('regular', entry_font_size))
 
 Unit_menu.grid(column=1, row=0, padx=15, ipady=5)
 Area_entry.grid(column=1, row=1, ipady=5, padx=15)
+Inertia_entry.grid(column=1, row=3, ipady=5, padx=15)
 Young_modulus_entry.grid(column=1, row=2, ipady=5, padx=15)
 
 Node_data = Read_data("nodes")
@@ -87,15 +92,20 @@ Properties_data = Read_data("properties")
 Element_data = Read_data("elements")
 Support_data = Read_data("supports")
 Load_data = Read_data("loads")
+Q_Load_data = Read_data("qload")
 
 A = Properties_data[0]
 E = Properties_data[1]
+I = Properties_data[2]
+
+# print(I)
 
 def record_properties_data():
 
     global Unit_value
     global Area_entry
     global Young_modulus_entry
+    global Inertia_entry
 
     with open('Properties_data.txt','w') as data_file:
         data_file.write("Properties Data \n")
@@ -104,10 +114,11 @@ def record_properties_data():
         data_file.write("   - Unit System: " + str(Unit_value.get()) + "\n")
         data_file.write("   - Area Value : " + str(Area_entry.get()) + "\n")
         data_file.write("   - Young modulus: " + str(Young_modulus_entry.get()) + "\n")
+        data_file.write("   - Inertia: " + str(Inertia_entry.get()) + "\n")
         data_file.write("*"*50)
 
 Update_properties_button = Button(properties_frame, width=15, height=2, text="UPDATE !!!", bg="#49B265", fg="white", font=('regular', 10), command=record_properties_data)
-Update_properties_button.grid(column=0, row=3, columnspan=2, padx=10, pady=10)
+Update_properties_button.grid(column=0, row=4, columnspan=2, padx=10, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
 
@@ -120,40 +131,39 @@ Node_label_font = ('regular', 10)
 Node_label_height = 2
 
 def open_result():
-    os.startfile("Full_result.txt")
-    os.startfile("Result_log.txt")
+    os.startfile("Full_beam_result.txt")
 
 def Solve_and_show():
     After_solve_frame = Frame(root, padx=5, pady=5, bg='#3d5a80', height=600, width=800,
                    relief=FLAT)
     After_solve_frame.grid(column=2, row=0, padx=5, pady=10)
-    Figures = Solve_Engine_02('graph')
+    Figures = Solve_Engine_03()
     Result_show_tab = ttk.Notebook(After_solve_frame)
     Result_show_tab.pack(padx=5, pady=5)
 
     structure = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
     axial_force = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
-    # bending_moment = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
-    # shear_force = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
-    reaction_force = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+    bending_moment = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+    shear_force = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
     displacement = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
+    reaction_force = Frame(Result_show_tab, height=600, width=800, bg='#90eebf')
 
     structure.pack(fill="both", expand=1)
     axial_force.pack(fill="both", expand=1)
-    # bending_moment.pack(fill="both", expand=1)
-    # shear_force.pack(fill="both", expand=1)
-    reaction_force.pack(fill="both", expand=1)
+    bending_moment.pack(fill="both", expand=1)
+    shear_force.pack(fill="both", expand=1)
     displacement.pack(fill="both", expand=1)
+    reaction_force.pack(fill="both", expand=1)
 
-    Frames = [structure, axial_force, reaction_force, displacement]
-    Frames_name = ["structure", "axial_force", "reaction_force","displacement"]
+    Frames = [structure, axial_force, bending_moment, shear_force, displacement, reaction_force]
+    Frames_name = ["structure", "axial_force", "bending_moment", "shear_force", "displacement", "reation_force"]
 
     Result_show_tab.add(structure, text="STRUCTURE")
     Result_show_tab.add(axial_force, text="AXIAL FORCE")
-    # Result_show_tab.add(bending_moment, text="BENDING MOMENT")
-    # Result_show_tab.add(shear_force, text="SHEAR FORCE")
-    Result_show_tab.add(reaction_force, text="REACTION FORCE")
+    Result_show_tab.add(bending_moment, text="BENDING MOMENT")
+    Result_show_tab.add(shear_force, text="SHEAR FORCE")
     Result_show_tab.add(displacement, text="DISPLACMENT")
+    Result_show_tab.add(reaction_force, text="REACTION FORCE")
 
     global canvas
 
@@ -205,19 +215,62 @@ def record_data(frame, mode):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*18 + str(force_X[i]) + ' '*16 + str(force_Y[i]) + "\n"
                 data_file.write(data_text)
         
-        ss = SystemElements(EA=E*A, figsize=(7,5))
+        ss = SystemElements(EA=E*A, EI=E*I, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
             end = Element_data[i][1]
             begin_coor = list(Node_data[begin])
             end_coor = list(Node_data[end])
-            ss.add_truss_element(location=[begin_coor, end_coor])
+            ss.add_element(location=[begin_coor, end_coor])
         
         for i in range(len(Load_data)):
             node_index = Load_data[i][0] + 1
             Force_x = Load_data[i][1]
             Force_y = Load_data[i][2]
             ss.point_load(node_id=node_index, Fx=Force_x, Fy=Force_y)
+        fig = ss.show_structure(show=False)
+        
+        try:
+            canvas.get_tk_widget().grid_forget()
+        except:
+            pass
+        canvas = FigureCanvasTkAgg(fig, root)
+        canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
+
+    elif mode == 'qload':
+        data = process_data(raw_data, 3)
+        node_number = data[0]
+        force_X = data[1]
+        force_Y = data[2]
+        with open('QLoad_data.txt', 'w+') as data_file:
+            text = "Load data"
+            label_text = ' '*10 + "Element number" + ' '*10 + "Value" + ' '*10 + "Direction" + "\n"
+            data_file.write(text)
+            data_file.write("\n")
+            data_file.write(label_text)
+            for i in range(len(node_number)):
+                data_text = ' '*10 + "node " + str(node_number[i]) + ' '*18 + str(force_X[i]) + ' '*16 + str(force_Y[i]) + "\n"
+                data_file.write(data_text)
+        
+        ss = SystemElements(EA=E*A, EI=E*I, figsize=(7,5))
+        for i in range(len(Element_data)):
+            begin = Element_data[i][0]
+            end = Element_data[i][1]
+            begin_coor = list(Node_data[begin])
+            end_coor = list(Node_data[end])
+            ss.add_element(location=[begin_coor, end_coor])
+        
+        for i in range(len(Q_Load_data)):
+            element_index = Q_Load_data[i][0] + 1
+            Force_Value = Load_data[i][1]
+            Direction = Load_data[i][2]
+            if Direction == 'e':
+                ss.q_load(element_id=element_index, q=Force_Value, direction='element')
+            if Direction == 'x':
+                ss.q_load(element_id=element_index, q=Force_Value, direction='x')
+            if Direction == 'y':
+                ss.q_load(element_id=element_index, q=Force_Value, direction='y')
+
         fig = ss.show_structure(show=False)
         
         try:
@@ -246,7 +299,7 @@ def record_data(frame, mode):
             end = Element_data[i][1]
             begin_coor = list(Node_data[begin])
             end_coor = list(Node_data[end])
-            ss.add_truss_element(location=[begin_coor, end_coor])
+            ss.add_element(location=[begin_coor, end_coor])
         for i in range(len(Support_data)):
             node_index = Support_data[i][0] + 1
             support_type = Support_data[i][1]
@@ -256,6 +309,8 @@ def record_data(frame, mode):
                 ss.add_support_roll(node_id=node_index, direction=2)
             if support_type == 'H':
                 ss.add_support_roll(node_id=node_index, direction=1)
+            if support_type == 'F':
+                ss.add_support_fixed(node_id=node_index)
         fig = ss.show_structure(show=False)
         # global canvas
         try:
@@ -284,7 +339,7 @@ def record_data(frame, mode):
             end = Element_data[i][1]
             begin_coor = list(Node_data[begin])
             end_coor = list(Node_data[end])
-            ss.add_truss_element(location=[begin_coor, end_coor])
+            ss.add_element(location=[begin_coor, end_coor])
         # Show update on structure plot
         fig = ss.show_structure(show=False)
         # global canvas
@@ -418,7 +473,7 @@ NumberOfElement_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan
 element_frame.grid(column=1, row=0, rowspan=2)
 element_frame.grid_propagate(False)
 
-Node_info_panel = Label(element_frame, text="Enter number of nodes :", height=Element_label_height, width=20, font=Element_label_font, bg='#167288', fg="white")
+Node_info_panel = Label(element_frame, text="Enter number of elements :", height=Element_label_height, width=23, font=Element_label_font, bg='#167288', fg="white")
 Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
 
 Okay_button = Button(element_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_element_info_entry)
@@ -488,7 +543,7 @@ NumberOfSupport_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan
 support_frame.grid(column=1, row=0, rowspan=2)
 support_frame.grid_propagate(False)
 
-Node_info_panel = Label(support_frame, text="Acting nodes :", height=Support_label_height, width=20, font=Support_label_font, bg='#167288', fg="white")
+Node_info_panel = Label(support_frame, text="Enter number of nodes :", height=Support_label_height, width=20, font=Support_label_font, bg='#167288', fg="white")
 Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
 
 Okay_button = Button(support_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_Support_info_entry)
@@ -553,16 +608,89 @@ def create_Load_info_entry():
     Update_properties_button = Button(main_frame, width=15, height=2, text="UPDATE !!!", bg='#df2525', fg="white", font=('regular', 10), command=lambda:record_data(main_frame,'load'))
     Update_properties_button.grid(column=0, row=NumberOfEntry+4, columnspan=6, padx=10, pady=10)
 
+
 NumberOfLoad_Entry = Entry(Load_frame, width=7, font=Load_entry_font)
 NumberOfLoad_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
 
 Load_frame.grid(column=1, row=0, rowspan=2)
 Load_frame.grid_propagate(False)
 
-Node_info_panel = Label(Load_frame, text="Enter number of apply load nodes :", height=Load_label_height, width=25, font=Load_label_font, bg='#167288', fg="white")
+Node_info_panel = Label(Load_frame, text="Number of Acting node :", height=Load_label_height, width=30, font=Load_label_font, bg='#167288', fg="white")
 Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
 
 Okay_button = Button(Load_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_Load_info_entry)
+Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
+
+##------------------------------------------------Frame-------------------------------------------------------------------##
+
+QLoad_frame = LabelFrame(working_tab, text='QLOAD INFO', padx=5, pady=5, bg='#af7c74', height=Frame_height, width=Frame_width,
+                   relief=FLAT, fg='white', font=('regular', font_size))
+QLoad_frame.grid(column=1, row=0)
+QLoad_frame.grid_propagate(False)
+
+Load_entry_width = 15
+Load_entry_font = ('regular', 15)
+Load_label_font = ('regular', 10)
+Load_label_height = 2
+
+def create_QLoad_info_entry():
+
+    global NumberOfLoad_Entry
+    global QLoad_frame
+
+    try:
+        NumberOfEntry = int(NumberOfLoad_Entry.get())
+    except:
+        print("Invalid data !!!")   
+
+    my_canvas = Canvas(QLoad_frame, height=570, width=380, bg='#af7c74')
+    my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+    # Add A Scrollbar to the canvas
+    my_scrollbar = ttk.Scrollbar(QLoad_frame, orient=VERTICAL, command=my_canvas.yview)
+    my_scrollbar.pack(side=RIGHT, fill=Y)
+
+    # Configure the canvas
+    my_canvas.configure(yscrollcommand=my_scrollbar.set)
+    my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox('all')))
+
+    # Create another frame inside the canvas
+    main_frame = Frame(my_canvas, bg='#af7c74')
+
+    # Add that new frame to a window in the canvas
+    my_canvas.create_window((0,0), window=main_frame, anchor="nw")
+
+    Load_label_font = ('regular', 10)
+    Load_label_height = 2
+    
+    Node_applied_load_label = Label(main_frame, text="Loaded Element", height=Load_label_height, width=15, font=Load_label_font, bg='#167288', fg="white")
+    force_in_horizontal = Label(main_frame, text="Force value", height=Load_label_height, width=15, font=Load_label_font, bg='#167288', fg="white")
+    force_in_vertical = Label(main_frame, text="Direction", height=Load_label_height, width=15, font=Load_label_font, bg='#167288', fg="white")
+    Node_applied_load_label.grid(column=0, row=2, padx=4, pady=10, columnspan=2)
+    force_in_horizontal.grid(column=2, row=2, padx=4, pady=10, columnspan=2)
+    force_in_vertical.grid(column=4, row=2, padx=4, pady=10, columnspan=2)    
+
+    for entry in range(1, NumberOfEntry+1):
+        Node_applied_load = Entry(main_frame, width=15, font=Load_label_font)
+        Node_applied_load.grid(column=0, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Froce_in_X = Entry(main_frame, width=15, font=Load_label_font)
+        Froce_in_X.grid(column=2, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+        Froce_in_Y = Entry(main_frame, width=15, font=Load_label_font)
+        Froce_in_Y.grid(column=4, row=entry+3, padx=4, pady=3, columnspan=2, ipady=6)
+    Update_properties_button = Button(main_frame, width=15, height=2, text="UPDATE !!!", bg='#df2525', fg="white", font=('regular', 10), command=lambda:record_data(main_frame,'qload'))
+    Update_properties_button.grid(column=0, row=NumberOfEntry+4, columnspan=6, padx=10, pady=10)
+
+
+NumberOfLoad_Entry = Entry(QLoad_frame, width=7, font=Load_entry_font)
+NumberOfLoad_Entry.grid(column=3, row=0, padx=4, pady=10, ipady=4, columnspan=3)
+
+QLoad_frame.grid(column=1, row=0, rowspan=2)
+QLoad_frame.grid_propagate(False)
+
+Node_info_panel = Label(QLoad_frame, text="Number of Acting nodes :", height=Load_label_height, width=30, font=Load_label_font, bg='#167288', fg="white")
+Node_info_panel.grid(column=0, row=0, pady=10, padx=4, columnspan=3)
+
+Okay_button = Button(QLoad_frame, width=43, height=2, text="OKAY !!!", bg='#df2525', fg="white", font=('regular',10), command=create_QLoad_info_entry)
 Okay_button.grid(column=0, row=1, columnspan=6, padx=5, pady=10)
 
 ##------------------------------------------------Frame-------------------------------------------------------------------##
@@ -589,7 +717,8 @@ working_tab.add(properties_frame, text="Properties")
 working_tab.add(node_frame, text="Node Info")
 working_tab.add(element_frame, text="Element Info")
 working_tab.add(support_frame, text="Support Info")
-working_tab.add(Load_frame, text="Load Info")
+working_tab.add(Load_frame, text="Point Load")
+working_tab.add(QLoad_frame, text="Q Load")
 working_tab.add(solve_frame, text="Solve Info")
 
 ##------------------------------------------------------------------------------------------------------------------------##

@@ -1,0 +1,3 @@
+Load data
+          Element number          Value          Direction
+          node 2                  10000                e
