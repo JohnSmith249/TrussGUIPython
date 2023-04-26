@@ -204,7 +204,8 @@ def record_data(frame, mode):
             for i in range(len(node_number)):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*18 + str(force_X[i]) + ' '*16 + str(force_Y[i]) + "\n"
                 data_file.write(data_text)
-        
+        Element_data = Read_data("elements")
+        Load_data = Read_data("loads")
         ss = SystemElements(EA=E*A, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
@@ -218,7 +219,8 @@ def record_data(frame, mode):
             Force_x = Load_data[i][1]
             Force_y = Load_data[i][2]
             ss.point_load(node_id=node_index, Fx=Force_x, Fy=Force_y)
-        fig = ss.show_structure(show=False)
+
+        fig = ss.show_structure(show=True)
         
         try:
             canvas.get_tk_widget().grid_forget()
@@ -240,6 +242,8 @@ def record_data(frame, mode):
             for i in range(len(node_number)):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*22 + str(type_of_support[i]) + "\n"
                 data_file.write(data_text)
+        Element_data = Read_data("elements")
+        Support_data = Read_data("supports")
         ss = SystemElements(EA=E*A, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
@@ -266,6 +270,7 @@ def record_data(frame, mode):
         canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
     
     elif mode == 'element':
+        Node_data = Read_data("nodes")
         data = process_data(raw_data, 2)
         begin_node = data[0]
         end_node = data[1]
@@ -278,6 +283,7 @@ def record_data(frame, mode):
             for i in range(len(begin_node)):
                 data_text = ' '*10 + "element " + str(i) + ' '*19 + str(begin_node[i]) + ' '*19 + str(end_node[i]) + "\n"
                 data_file.write(data_text)
+        Element_data = Read_data("elements")
         ss = SystemElements(EA=E*A, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
@@ -286,13 +292,13 @@ def record_data(frame, mode):
             end_coor = list(Node_data[end])
             ss.add_truss_element(location=[begin_coor, end_coor])
         # Show update on structure plot
-        fig = ss.show_structure(show=False)
+        fig1 = ss.show_structure(show=False)
         # global canvas
         try:
             canvas.get_tk_widget().grid_forget()
         except:
             pass
-        canvas = FigureCanvasTkAgg(fig, root)
+        canvas = FigureCanvasTkAgg(fig1, root)
         canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
 
 

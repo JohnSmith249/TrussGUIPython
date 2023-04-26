@@ -214,7 +214,12 @@ def record_data(frame, mode):
             for i in range(len(node_number)):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*18 + str(force_X[i]) + ' '*16 + str(force_Y[i]) + "\n"
                 data_file.write(data_text)
-        
+        Node_data = Read_data("nodes")
+        Properties_data = Read_data("properties")
+        Element_data = Read_data("elements")
+        Support_data = Read_data("supports")
+        Load_data = Read_data("loads")
+        Q_Load_data = Read_data("qload")
         ss = SystemElements(EA=E*A, EI=E*I, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
@@ -238,6 +243,7 @@ def record_data(frame, mode):
         canvas.get_tk_widget().grid(column=2, row=0, padx=5, pady=10)
 
     elif mode == 'qload':
+        
         data = process_data(raw_data, 3)
         node_number = data[0]
         force_X = data[1]
@@ -251,7 +257,12 @@ def record_data(frame, mode):
             for i in range(len(node_number)):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*18 + str(force_X[i]) + ' '*16 + str(force_Y[i]) + "\n"
                 data_file.write(data_text)
-        
+        Node_data = Read_data("nodes")
+        Properties_data = Read_data("properties")
+        Element_data = Read_data("elements")
+        Support_data = Read_data("supports")
+        Load_data = Read_data("loads")
+        Q_Load_data = Read_data("qload")
         ss = SystemElements(EA=E*A, EI=E*I, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
@@ -293,6 +304,12 @@ def record_data(frame, mode):
             for i in range(len(node_number)):
                 data_text = ' '*10 + "node " + str(node_number[i]) + ' '*22 + str(type_of_support[i]) + "\n"
                 data_file.write(data_text)
+        Node_data = Read_data("nodes")
+        Properties_data = Read_data("properties")
+        Element_data = Read_data("elements")
+        Support_data = Read_data("supports")
+        Load_data = Read_data("loads")
+        Q_Load_data = Read_data("qload")
         ss = SystemElements(EA=E*A, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
@@ -333,6 +350,12 @@ def record_data(frame, mode):
             for i in range(len(begin_node)):
                 data_text = ' '*10 + "element " + str(i) + ' '*19 + str(begin_node[i]) + ' '*19 + str(end_node[i]) + "\n"
                 data_file.write(data_text)
+        Node_data = Read_data("nodes")
+        Properties_data = Read_data("properties")
+        Element_data = Read_data("elements")
+        Support_data = Read_data("supports")
+        Load_data = Read_data("loads")
+        Q_Load_data = Read_data("qload")
         ss = SystemElements(EA=E*A, figsize=(7,5))
         for i in range(len(Element_data)):
             begin = Element_data[i][0]
